@@ -2,7 +2,7 @@
 layout: post
 title: "Intro to Computer Vision"
 date: 2023-01-15
-categories: computer-vision
+categories: ["computer-vision"]
 ---
 
 ### What is Computer Vision?

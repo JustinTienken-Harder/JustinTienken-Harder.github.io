@@ -1,6 +1,6 @@
 # Site settings
 title: Justin Harder's ML Blog
-email: your-email@example.com
+email: justinhardermsc@gmail.com
 description: >-
   Justin Harder's blog on machine learning, computer vision, and large language models.
 baseurl: "/About-Me" # the subpath of your site, e.g. /blog
@@ -46,3 +46,8 @@ defaults:
       path: ""
     values:
       layout: "default"
+
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
