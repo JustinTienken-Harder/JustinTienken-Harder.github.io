@@ -1,0 +1,15 @@
+- home: 
+    title: Home
+    url: /
+- about: 
+    title: About
+    url: /pages/about.md
+- blog: 
+    title: Blog
+    url: /pages/blog.md
+- projects: 
+    title: Projects
+    url: /pages/projects.md
+- contact: 
+    title: Contact
+    url: /pages/contact.md

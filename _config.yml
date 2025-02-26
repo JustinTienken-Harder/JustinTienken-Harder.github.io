@@ -1,0 +1,9 @@
+title: Justin Harder's ML Blog
+description: A blog focused on machine learning, computer vision, and large language models, featuring insights, tutorials, and personal projects.
+url: https://your-github-username.github.io/ml-blog
+author: Justin Harder
+theme: minima
+markdown: kramdown
+permalink: pretty
+paginate: 5
+exclude: [Gemfile, .gitignore, README.md]
