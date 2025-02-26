@@ -2,7 +2,7 @@
 layout: post
 title: "Welcome to My Blog"
 date: 2023-01-01
-categories: general
+categories: ["general"]
 ---
 
 # Welcome to My Machine Learning Blog

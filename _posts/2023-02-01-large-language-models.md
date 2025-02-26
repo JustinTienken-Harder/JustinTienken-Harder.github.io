@@ -2,7 +2,7 @@
 layout: post
 title: "Large Language Models"
 date: 2023-02-01
-categories: language-models nlp
+categories: ["language-models", "nlp"]
 ---
 
 ## What are Large Language Models?

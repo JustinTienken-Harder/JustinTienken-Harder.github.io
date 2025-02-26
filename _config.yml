@@ -3,8 +3,8 @@ title: Justin Harder's ML Blog
 email: your-email@example.com
 description: >-
   Justin Harder's blog on machine learning, computer vision, and large language models.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/About-Me" # the subpath of your site, e.g. /blog
+url: "https://justintienken-harder.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: your_twitter
 github_username:  your_github
 

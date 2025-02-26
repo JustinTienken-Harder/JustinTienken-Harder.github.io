@@ -2,7 +2,7 @@
 layout: post
 title: "Introduction to Machine Learning"
 date: 2024-02-25
-categories: machine-learning basics
+categories: ["machine-learning", "basics"]
 ---
 
 # Introduction to Machine Learning
