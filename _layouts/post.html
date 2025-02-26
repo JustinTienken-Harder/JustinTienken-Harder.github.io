@@ -1,20 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include head.html %}
-</head>
-<body>
-    {% include header.html %}
-    <div class="content">
-        <article>
-            <h1>{{ page.title }}</h1>
-            <p class="meta">Posted on {{ page.date | date: "%B %d, %Y" }} by Justin Harder</p>
-            <div class="post-content">
-                {{ content }}
-            </div>
-        </article>
+---
+layout: default
+---
+<article class="post">
+    <h1>{{ page.title }}</h1>
+    <div class="post-meta">
+        <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %d, %Y" }}</time>
+        {% if page.categories.size > 0 %}
+        <span class="categories">
+            Categories: 
+            {% for category in page.categories %}
+            <a href="/categories/{{ category | slugify }}/">{{ category }}</a>{% unless forloop.last %}, {% endunless %}
+            {% endfor %}
+        </span>
+        {% endif %}
     </div>
-    {% include sidebar.html %}
-    {% include footer.html %}
-</body>
-</html>
+    <div class="post-content">
+        {{ content }}
+    </div>
+</article>

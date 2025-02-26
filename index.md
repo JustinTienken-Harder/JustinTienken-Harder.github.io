@@ -1,15 +1,14 @@
-# Welcome to My Blog!
+---
+layout: default
+title: Home
+---
 
-Hello! I'm Justin Harder, and I'm excited to share my journey into the fascinating world of machine learning, particularly in the realms of computer vision and large language models. This blog will serve as a platform for me to document my learning experiences, projects, and insights.
+# Welcome to My Machine Learning Blog
 
-## What to Expect
+I'm Justin Harder, a machine learning engineer and enthusiast. This blog is dedicated to my thoughts, experiments, and insights on machine learning, computer vision, and large language models.
 
-In this blog, you can look forward to:
+## Recent Posts
 
-- **In-depth Articles**: Exploring various topics in machine learning, including tutorials and explanations of complex concepts.
-- **Project Showcases**: Detailed descriptions of my projects, including the challenges I faced and the solutions I implemented.
-- **Personal Insights**: Reflections on my learning journey, including my experiences with odd hobbies like solving Rubik's cubes and my adventures involving Poison Ivy.
-
-## Join Me on This Journey
-
-Feel free to explore the blog posts, and don't hesitate to reach out if you have any questions or comments. Let's dive into the world of machine learning together!
+{% for post in site.posts limit:5 %}
+- [{{ post.title }}]({{ post.url }}) - {{ post.date | date: "%B %d, %Y" }}
+{% endfor %}

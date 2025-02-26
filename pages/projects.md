@@ -1,36 +1,25 @@
-# Projects in Machine Learning
+---
+layout: page
+title: Projects
+permalink: /pages/projects/
+---
 
-Welcome to the projects section of my blog! Here, I will showcase various projects related to machine learning, with a particular focus on computer vision and large language models. Each project will highlight the techniques used, challenges faced, and the outcomes achieved.
+# Projects
 
-## Project 1: Image Classification with Convolutional Neural Networks
+Here are some of the machine learning projects I've been working on:
 
-In this project, I developed a convolutional neural network (CNN) to classify images from the CIFAR-10 dataset. The model achieved an accuracy of over 85% on the test set. I utilized TensorFlow and Keras for building and training the model.
+## Project 1: Computer Vision for Object Detection
 
-### Key Techniques:
-- Data Augmentation
-- Transfer Learning
-- Hyperparameter Tuning
+A deep learning project focused on real-time object detection using YOLOv5.
 
-## Project 2: Object Detection using YOLO
+## Project 2: NLP Sentiment Analysis
 
-This project involved implementing the YOLO (You Only Look Once) algorithm for real-time object detection. I trained the model on a custom dataset and achieved impressive results in detecting multiple objects in images.
+A sentiment analysis tool built with BERT that analyzes customer feedback.
 
-### Key Techniques:
-- YOLOv3 Architecture
-- Custom Dataset Creation
-- Real-time Inference
+## Project 3: Reinforcement Learning for Game AI
 
-## Project 3: Text Generation with GPT-3
+Using reinforcement learning techniques to train AI agents to play complex games.
 
-In this project, I explored the capabilities of large language models by using OpenAI's GPT-3 to generate coherent and contextually relevant text. I created a web application that allows users to input prompts and receive generated text in response.
+## Project 4: GAN for Image Generation
 
-### Key Techniques:
-- API Integration
-- Prompt Engineering
-- User Interface Design
-
-## Future Projects
-
-I am constantly exploring new ideas and technologies in the field of machine learning. Stay tuned for updates on upcoming projects that delve into advanced topics such as generative adversarial networks (GANs) and reinforcement learning!
-
-Feel free to reach out if you have any questions or would like to collaborate on a project!
+Exploring generative models to create realistic images from textual descriptions.

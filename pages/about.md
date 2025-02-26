@@ -1,9 +1,27 @@
-# About Justin Harder
+---
+layout: page
+title: About Me
+permalink: /pages/about/
+---
 
-Welcome to my blog! I'm Justin Harder, a machine learning enthusiast with a focus on computer vision and large language models. I enjoy exploring the fascinating world of AI and sharing my insights through this platform.
+# About Me
 
-In addition to my passion for technology, I have a knack for solving Rubik's cubes and diving into various odd hobbies. One of my unique interests involves exploring the intriguing properties of Poison Ivy, both in nature and in its applications.
+I'm Justin Harder, a machine learning engineer with a passion for computer vision and NLP. 
 
-Here, you'll find a collection of my thoughts, projects, and tutorials related to machine learning, as well as some personal reflections on my journey. I hope you find the content engaging and informative!
+## Experience
 
-Feel free to reach out if you have any questions or would like to connect!
+- Machine Learning Engineer at XYZ Company
+- Research Assistant at ABC University
+- Contributor to various open-source ML projects
+
+## Education
+
+- M.S. in Computer Science, Specialization in Machine Learning
+- B.S. in Computer Science
+
+## Skills
+
+- Python, TensorFlow, PyTorch
+- Computer Vision, Natural Language Processing, Classical Statistics
+- Large Language Models, Transformers
+- Data Analysis and Visualization
