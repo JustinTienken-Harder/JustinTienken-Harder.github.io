@@ -6,7 +6,10 @@
 <body>
     {% include header.html %}
     <main>
-        {{ content }}
+        <article>
+            {{ content }}
+        </article>
+        {% include sidebar.html %}
     </main>
     <footer>
         <p>&copy; 2024 Justin Harder. All rights reserved.</p>

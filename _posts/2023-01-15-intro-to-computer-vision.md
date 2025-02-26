@@ -1,3 +1,10 @@
+---
+layout: post
+title: "Intro to Computer Vision"
+date: 2023-01-15
+categories: computer-vision
+---
+
 ### What is Computer Vision?
 
 At its core, computer vision is about enabling machines to see and process visual information. This involves several key tasks:

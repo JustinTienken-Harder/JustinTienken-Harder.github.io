@@ -28,7 +28,7 @@ exclude:
 collections:
   posts:
     output: true
-    permalink: /posts/:year/:month/:day/:title/
+    permalink: /posts/:title/
 
 # Defaults
 defaults:
