@@ -3,16 +3,17 @@ title: Justin Harder's ML Blog
 email: justinhardermsc@gmail.com
 description: >-
   Justin Harder's blog on machine learning, computer vision, and large language models.
-baseurl: "/About-Me" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://justintienken-harder.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: your_twitter
-github_username:  your_github
+github_username:  https://github.com/JustinTienken-Harder
 
 # Build settings
 markdown: kramdown
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
+#  - jekyll-scholar
 
 # Exclude from processing
 exclude:
@@ -51,3 +52,14 @@ kramdown:
   input: GFM
   hard_wrap: false
   syntax_highlighter: rouge
+
+scholar:
+  style: apa
+  locale: en
+  sort_by: year
+  order: descending
+  source: ./_bibliography
+  bibliography: references.bib
+  bibliography_template: "{{reference}}"
+  replace_strings: true
+  join_strings: true

@@ -1,0 +1,441 @@
+<div id="ab-test-demo">
+    <div class="controls">
+      <label for="sample-size">Sample Size: <span id="sample-size-value">100</span></label>
+      <input type="range" id="sample-size-slider" min="10" max="500" step="10" value="100">
+      <button id="resample-button">Run New Sample</button>
+    </div>
+    
+    <div class="charts-row">
+      <div class="chart-container half-width">
+        <h3>Scenario 1: Distinct Distributions</h3>
+        <p>Means: 50 vs 60, Standard Deviations: 10 vs 10</p>
+        <div id="distinct-distributions-chart"></div>
+        <div id="distinct-sample-means-chart"></div>
+        <div id="distinct-result" class="result"></div>
+      </div>
+    
+      <div class="chart-container half-width">
+        <h3>Scenario 2: Similar Distributions</h3>
+        <p>Means: 50 vs 53, Standard Deviations: 15 vs 15</p>
+        <div id="similar-distributions-chart"></div>
+        <div id="similar-sample-means-chart"></div>
+        <div id="similar-result" class="result"></div>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+  #ab-test-demo {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .controls {
+    margin-bottom: 20px;
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .charts-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+  }
+  
+  .half-width {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  #sample-size-slider {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  #resample-button {
+    padding: 8px 16px;
+    background: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .chart-container {
+    margin-bottom: 40px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  #distinct-distributions-chart,
+  #similar-distributions-chart,
+  #distinct-sample-means-chart,
+  #similar-sample-means-chart {
+    height: 200px;
+    margin: 15px 0;
+    position: relative;
+  }
+  
+  .result {
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+  }
+  
+  .significant {
+    background-color: rgba(76, 175, 80, 0.2);
+  }
+  
+  .not-significant {
+    background-color: rgba(244, 67, 54, 0.2);
+  }
+  
+  .distribution {
+    position: absolute;
+    bottom: 0;
+  }
+  
+  .distribution-a {
+    background-color: rgba(66, 133, 244, 0.3);
+    border: 1px solid rgba(66, 133, 244, 0.8);
+  }
+  
+  .distribution-b {
+    background-color: rgba(219, 68, 55, 0.3);
+    border: 1px solid rgba(219, 68, 55, 0.8);
+  }
+  
+  .mean-marker {
+    position: absolute;
+    bottom: 0;
+    width: 2px;
+    background-color: black;
+    transform: translateX(-1px);
+  }
+  
+  .confidence-interval {
+    position: absolute;
+    bottom: 0;
+    height: 10px;
+  }
+  
+  .confidence-interval-a {
+    background-color: rgba(66, 133, 244, 0.8);
+  }
+  
+  .confidence-interval-b {
+    background-color: rgba(219, 68, 55, 0.8);
+  }
+  
+  .legend {
+    display: flex;
+    gap: 15px;
+    margin: 10px 0;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .color-box {
+    width: 15px;
+    height: 15px;
+  }
+  
+  .axis-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #333;
+  }
+  
+  .tick {
+    position: absolute;
+    bottom: -15px;
+    transform: translateX(-50%);
+    font-size: 10px;
+  }
+  </style>
+  
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Configuration
+    const config = {
+      distinct: {
+        meanA: 50,
+        meanB: 60,
+        sdA: 10, 
+        sdB: 10
+      },
+      similar: {
+        meanA: 50,
+        meanB: 53,
+        sdA: 15,
+        sdB: 15
+      },
+      chartWidth: 700,
+      chartHeight: 200,
+      sampleSize: 100
+    };
+    
+    // DOM elements
+    const sampleSizeSlider = document.getElementById('sample-size-slider');
+    const sampleSizeValue = document.getElementById('sample-size-value');
+    const resampleButton = document.getElementById('resample-button');
+    
+    // Initialize charts
+    renderDistributionCharts();
+    updateSampleCharts();
+    
+    // Event listeners
+    sampleSizeSlider.addEventListener('input', function() {
+      config.sampleSize = parseInt(this.value);
+      sampleSizeValue.textContent = config.sampleSize;
+      updateSampleCharts();
+    });
+    
+    resampleButton.addEventListener('click', function() {
+      updateSampleCharts();
+    });
+    
+    function renderDistributionCharts() {
+      renderDistributionChart('distinct-distributions-chart', config.distinct);
+      renderDistributionChart('similar-distributions-chart', config.similar);
+    }
+    
+    function renderDistributionChart(containerId, params) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      
+      // Create the x-axis
+      createAxis(container);
+      
+      // Create distributions
+      const scale = 2.5; // Scale factor for visualization
+      
+      // Create distribution curves
+      const pointsA = generateNormalCurve(params.meanA, params.sdA, scale);
+      const pointsB = generateNormalCurve(params.meanB, params.sdB, scale);
+      
+      // Create distribution elements
+      createDistributionElement(container, pointsA, 'a');
+      createDistributionElement(container, pointsB, 'b');
+      
+      // Create legend
+      createLegend(container);
+    }
+    
+    function updateSampleCharts() {
+      updateSampleChart('distinct-sample-means-chart', 'distinct-result', config.distinct);
+      updateSampleChart('similar-sample-means-chart', 'similar-result', config.similar);
+    }
+    
+    function updateSampleChart(containerId, resultId, params) {
+      const container = document.getElementById(containerId);
+      const resultEl = document.getElementById(resultId);
+      container.innerHTML = '';
+      
+      // Create the x-axis
+      createAxis(container);
+      
+      // Generate samples
+      const sampleA = generateSample(params.meanA, params.sdA, config.sampleSize);
+      const sampleB = generateSample(params.meanB, params.sdB, config.sampleSize);
+      
+      // Calculate sample statistics
+      const sampleMeanA = calculateMean(sampleA);
+      const sampleMeanB = calculateMean(sampleB);
+      const sampleSdA = calculateSD(sampleA);
+      const sampleSdB = calculateSD(sampleB);
+      
+      // Calculate confidence intervals (95%)
+      const marginA = 1.96 * (sampleSdA / Math.sqrt(config.sampleSize));
+      const marginB = 1.96 * (sampleSdB / Math.sqrt(config.sampleSize));
+      
+      const ciStartA = sampleMeanA - marginA;
+      const ciEndA = sampleMeanA + marginA;
+      const ciStartB = sampleMeanB - marginB;
+      const ciEndB = sampleMeanB + marginB;
+      
+      // Check if confidence intervals overlap
+      const significant = ciEndA < ciStartB || ciEndB < ciStartA;
+      
+      // Create confidence interval elements
+      createConfidenceInterval(container, sampleMeanA, ciStartA, ciEndA, 'a');
+      createConfidenceInterval(container, sampleMeanB, ciStartB, ciEndB, 'b');
+      
+      // Update result display
+      resultEl.innerHTML = significant ? 
+        `<p>Result: <span style="color: green;">Significant difference detected</span> (95% confidence intervals don't overlap)</p>` :
+        `<p>Result: <span style="color: red;">No significant difference detected</span> (95% confidence intervals overlap)</p>`;
+      
+      resultEl.className = significant ? 'result significant' : 'result not-significant';
+      
+      resultEl.innerHTML += `
+        <p>Group A: Mean = ${sampleMeanA.toFixed(2)}, 95% CI [${ciStartA.toFixed(2)}, ${ciEndA.toFixed(2)}]</p>
+        <p>Group B: Mean = ${sampleMeanB.toFixed(2)}, 95% CI [${ciStartB.toFixed(2)}, ${ciEndB.toFixed(2)}]</p>
+      `;
+    }
+    
+    // Helper functions
+    function generateNormalCurve(mean, sd, scale) {
+      const points = [];
+      for (let x = 0; x < 100; x++) {
+        const value = x;
+        const y = Math.exp(-0.5 * Math.pow((value - mean) / sd, 2)) / (sd * Math.sqrt(2 * Math.PI));
+        points.push({ x: value, y: y * scale * 100 });
+      }
+      return points;
+    }
+    
+    function createDistributionElement(container, points, type) {
+      const maxHeight = Math.max(...points.map(p => p.y));
+      const minX = Math.min(...points.map(p => p.x));
+      const maxX = Math.max(...points.map(p => p.x));
+      
+      // Create SVG path for smooth curve
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', container.offsetWidth);
+      svg.setAttribute('height', config.chartHeight);
+      svg.style.position = 'absolute';
+      svg.style.bottom = '0';
+      svg.style.left = '0';
+      
+      // Create filled area under the curve
+      const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      
+      // Generate path data for area (includes line to bottom)
+      let areaPathData = `M ${points[0].x * (container.offsetWidth / 100)} ${config.chartHeight - points[0].y}`;
+      for (let i = 1; i < points.length; i++) {
+        areaPathData += ` L ${points[i].x * (container.offsetWidth / 100)} ${config.chartHeight - points[i].y}`;
+      }
+      // Add points to close the path at the bottom
+      areaPathData += ` L ${points[points.length-1].x * (container.offsetWidth / 100)} ${config.chartHeight}`;
+      areaPathData += ` L ${points[0].x * (container.offsetWidth / 100)} ${config.chartHeight}`;
+      areaPathData += ` Z`;
+      
+      areaPath.setAttribute('d', areaPathData);
+      areaPath.setAttribute('fill', type === 'a' ? 'rgba(66, 133, 244, 0.2)' : 'rgba(219, 68, 55, 0.2)');
+      
+      // Create line for the curve
+      const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      
+      // Generate path data
+      let linePathData = `M ${points[0].x * (container.offsetWidth / 100)} ${config.chartHeight - points[0].y}`;
+      for (let i = 1; i < points.length; i++) {
+        linePathData += ` L ${points[i].x * (container.offsetWidth / 100)} ${config.chartHeight - points[i].y}`;
+      }
+      
+      linePath.setAttribute('d', linePathData);
+      linePath.setAttribute('stroke', type === 'a' ? 'rgba(66, 133, 244, 0.8)' : 'rgba(219, 68, 55, 0.8)');
+      linePath.setAttribute('stroke-width', '2');
+      linePath.setAttribute('fill', 'none');
+      
+      svg.appendChild(areaPath);
+      svg.appendChild(linePath);
+      container.appendChild(svg);
+      
+      // Add a line to mark the mean
+      const mean = type === 'a' ? 
+        (type === 'a' ? config.distinct.meanA : config.distinct.meanB) : 
+        (type === 'a' ? config.similar.meanA : config.similar.meanB);
+      
+      const meanMarker = document.createElement('div');
+      meanMarker.className = 'mean-marker';
+      meanMarker.style.left = `${mean}%`;
+      meanMarker.style.height = `${80}px`;
+      container.appendChild(meanMarker);
+    }
+    
+    function createConfidenceInterval(container, mean, start, end, type) {
+      // Mean marker
+      const meanMarker = document.createElement('div');
+      meanMarker.className = 'mean-marker';
+      meanMarker.style.left = `${mean}%`;
+      meanMarker.style.height = `${50}px`;
+      container.appendChild(meanMarker);
+      
+      // Confidence interval
+      const ci = document.createElement('div');
+      ci.className = `confidence-interval confidence-interval-${type}`;
+      ci.style.left = `${start}%`;
+      ci.style.width = `${end - start}%`;
+      container.appendChild(ci);
+    }
+    
+    function createAxis(container) {
+      const axisLine = document.createElement('div');
+      axisLine.className = 'axis-line';
+      container.appendChild(axisLine);
+      
+      // Add ticks
+      for (let i = 0; i <= 100; i += 10) {
+        const tick = document.createElement('div');
+        tick.className = 'tick';
+        tick.style.left = `${i}%`;
+        tick.textContent = i;
+        container.appendChild(tick);
+      }
+    }
+    
+    function createLegend(container) {
+      const legend = document.createElement('div');
+      legend.className = 'legend';
+      
+      const itemA = document.createElement('div');
+      itemA.className = 'legend-item';
+      const colorBoxA = document.createElement('div');
+      colorBoxA.className = 'color-box';
+      colorBoxA.style.backgroundColor = 'rgba(66, 133, 244, 0.8)';
+      itemA.appendChild(colorBoxA);
+      itemA.appendChild(document.createTextNode('Group A'));
+      
+      const itemB = document.createElement('div');
+      itemB.className = 'legend-item';
+      const colorBoxB = document.createElement('div');
+      colorBoxB.className = 'color-box';
+      colorBoxB.style.backgroundColor = 'rgba(219, 68, 55, 0.8)';
+      itemB.appendChild(colorBoxB);
+      itemB.appendChild(document.createTextNode('Group B'));
+      
+      legend.appendChild(itemA);
+      legend.appendChild(itemB);
+      container.appendChild(legend);
+    }
+    
+    // Statistical functions
+    function generateSample(mean, sd, size) {
+      const sample = [];
+      for (let i = 0; i < size; i++) {
+        // Box-Muller transform to generate normally distributed random numbers
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        sample.push(mean + sd * z);
+      }
+      return sample;
+    }
+    
+    function calculateMean(arr) {
+      return arr.reduce((sum, val) => sum + val, 0) / arr.length;
+    }
+    
+    function calculateSD(arr) {
+      const mean = calculateMean(arr);
+      return Math.sqrt(arr.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (arr.length - 1));
+    }
+  });
+  </script>
