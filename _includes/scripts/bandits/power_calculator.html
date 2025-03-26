@@ -1,0 +1,431 @@
+<div id="power-calculator" class="calculator-container">
+  <h3>Sample Size Calculator for Statistical Power</h3>
+  
+  <div class="input-row">
+    <div class="form-group">
+      <label for="mean-a">A Mean:</label>
+      <input type="number" id="mean-a" value="50" step="1">
+    </div>
+    
+    <div class="form-group">
+      <label for="sd-a">A SD:</label>
+      <input type="number" id="sd-a" value="10" min="0.1" step="0.1">
+    </div>
+    
+    <div class="form-group">
+      <label for="mean-b">B Mean:</label>
+      <input type="number" id="mean-b" value="55" step="1">
+    </div>
+    
+    <div class="form-group">
+      <label for="sd-b">B SD:</label>
+      <input type="number" id="sd-b" value="10" min="0.1" step="0.1">
+    </div>
+    
+    <div class="form-group power-group">
+      <label for="power-slider">Power: <span id="power-value">80%</span></label>
+      <input type="range" id="power-slider" min="50" max="99" value="80" step="1">
+    </div>
+    
+    <div class="form-group">
+      <label for="alpha">α:</label>
+      <select id="alpha">
+        <option value="0.05" selected>0.05 (95%)</option>
+        <option value="0.01">0.01 (99%)</option>
+        <option value="0.1">0.10 (90%)</option>
+      </select>
+    </div>
+    
+    <button id="calculate-btn" class="calculate-btn">Calculate</button>
+  </div>
+  
+  <div id="result" class="result-container">
+    <div id="sample-size-result" class="result-box"></div>
+    <div id="explanation" class="explanation"></div>
+  </div>
+  
+  <div id="visualization" class="visualization-container">
+    <!-- Power curve will be displayed here -->
+  </div>
+</div>
+
+<style>
+.calculator-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.calculator-container h3 {
+  margin-top: 0;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.input-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  background: #eee;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 0;
+  flex: 1 0 100px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
+  height: 36px;
+}
+
+.power-group {
+  flex: 1.5 0 140px;
+}
+
+.calculate-btn {
+  height: 36px;
+  background: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0 20px;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.calculate-btn:hover {
+  background: #3367d6;
+}
+
+.result-container {
+  margin-top: 20px;
+}
+
+.result-box {
+  padding: 15px;
+  background: #e8f0fe;
+  border-left: 4px solid #4285f4;
+  margin-bottom: 15px;
+  font-weight: 500;
+  font-size: 18px;
+  text-align: center;
+}
+
+.explanation {
+  background: #f1f3f4;
+  padding: 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.visualization-container {
+  margin-top: 30px;
+  height: 300px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+#power-value {
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .input-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .form-group {
+    width: 100%;
+  }
+  
+  .calculate-btn {
+    width: 100%;
+  }
+}
+
+/* For medium screens */
+@media (min-width: 769px) and (max-width: 900px) {
+  .form-group {
+    flex: 1 0 calc(33% - 10px);
+  }
+  
+  .power-group, .calculate-btn {
+    flex: 1 0 calc(50% - 10px);
+    margin-top: 10px;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // All your existing JavaScript remains the same
+  const meanAInput = document.getElementById('mean-a');
+  const sdAInput = document.getElementById('sd-a');
+  const meanBInput = document.getElementById('mean-b');
+  const sdBInput = document.getElementById('sd-b');
+  const powerSlider = document.getElementById('power-slider');
+  const powerValue = document.getElementById('power-value');
+  const alphaSelect = document.getElementById('alpha');
+  const calculateBtn = document.getElementById('calculate-btn');
+  const sampleSizeResult = document.getElementById('sample-size-result');
+  const explanation = document.getElementById('explanation');
+  const visualization = document.getElementById('visualization');
+  
+  // Update power value display when slider changes
+  powerSlider.addEventListener('input', function() {
+    powerValue.textContent = this.value + '%';
+  });
+  
+  calculateBtn.addEventListener('click', calculateSampleSize);
+  
+  // Function to calculate required sample size
+  function calculateSampleSize() {
+    const meanA = parseFloat(meanAInput.value);
+    const sdA = parseFloat(sdAInput.value);
+    const meanB = parseFloat(meanBInput.value);
+    const sdB = parseFloat(sdBInput.value);
+    const power = parseFloat(powerSlider.value) / 100;
+    const alpha = parseFloat(alphaSelect.value);
+    
+    // Validate inputs
+    if (!validateInputs(meanA, sdA, meanB, sdB)) {
+      sampleSizeResult.innerHTML = 'Please enter valid values for all fields.';
+      explanation.innerHTML = '';
+      return;
+    }
+    
+    // Calculate effect size (Cohen's d)
+    const effectSize = Math.abs(meanA - meanB) / Math.sqrt((Math.pow(sdA, 2) + Math.pow(sdB, 2)) / 2);
+    
+    // Get z-scores for alpha and power
+    const zAlpha = getZScore(alpha / 2); // Two-tailed test
+    const zBeta = getZScore(1 - power);
+    
+    // Calculate required sample size per group using the correct formula
+    const pooledVariance = (Math.pow(sdA, 2) + Math.pow(sdB, 2)) / 2;
+    const adjustedSampleSize = Math.ceil(2 * pooledVariance * Math.pow(zAlpha + zBeta, 2) / Math.pow(meanA - meanB, 2));
+    
+    // Display results
+    displayResults(adjustedSampleSize, effectSize, meanA, meanB, sdA, sdB, power, alpha);
+    
+    // Create visualization
+    createVisualization(meanA, meanB, sdA, sdB, adjustedSampleSize, power, alpha);
+  }
+  
+  // Validate numeric inputs
+  function validateInputs(meanA, sdA, meanB, sdB) {
+    return !isNaN(meanA) && !isNaN(sdA) && !isNaN(meanB) && !isNaN(sdB) && 
+           sdA > 0 && sdB > 0 && meanA !== meanB;
+  }
+  
+  // Get z-score for a given probability
+  function getZScore(p) {
+    // Approximation of the inverse of the standard normal CDF
+    if (p <= 0) return -Infinity;
+    if (p >= 1) return Infinity;
+    
+    let t, z;
+    
+    if (p < 0.5) {
+      t = Math.sqrt(-2 * Math.log(p));
+      z = -((0.010328 * t + 0.802853) * t + 2.515517) / 
+          ((0.001308 * t + 0.189269) * t + 1.432788) * t;
+    } else {
+      t = Math.sqrt(-2 * Math.log(1 - p));
+      z = ((0.010328 * t + 0.802853) * t + 2.515517) / 
+          ((0.001308 * t + 0.189269) * t + 1.432788) * t;
+    }
+    
+    return z;
+  }
+  
+  // Display calculation results
+  function displayResults(sampleSize, effectSize, meanA, meanB, sdA, sdB, power, alpha) {
+    sampleSizeResult.innerHTML = `
+      Required sample size: <strong>${sampleSize} per group</strong>
+      <div style="font-size: 14px; margin-top: 5px;">
+        Total participants needed: ${sampleSize * 2}
+      </div>
+    `;
+    
+    explanation.innerHTML = `
+      <p><strong>Effect Size (Cohen's d):</strong> ${effectSize.toFixed(2)}</p>
+      <p>This calculation is based on:</p>
+      <ul>
+        <li>Population A: Mean = ${meanA}, SD = ${sdA}</li>
+        <li>Population B: Mean = ${meanB}, SD = ${sdB}</li>
+        <li>Desired Power: ${(power * 100).toFixed(0)}%</li>
+        <li>Significance Level (α): ${alpha}</li>
+      </ul>
+      <p>With a sample size of <strong>${sampleSize}</strong> in each group, you'll have a ${(power * 100).toFixed(0)}% chance of detecting the difference between these populations if it exists, with a ${(100 - alpha * 100).toFixed(0)}% confidence level.</p>
+      <p><em>Note: This calculation assumes normally distributed data and equal variance between groups.</em></p>
+    `;
+  }
+  
+  // Create a visualization of the power calculation
+  function createVisualization(meanA, meanB, sdA, sdB, sampleSize, power, alpha) {
+    // Clear previous visualization
+    visualization.innerHTML = '';
+    
+    // Create canvas for power curve
+    const canvas = document.createElement('canvas');
+    canvas.width = visualization.clientWidth - 20;
+    canvas.height = visualization.clientHeight - 20;
+    canvas.style.display = 'block';
+    canvas.style.margin = '10px auto';
+    visualization.appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Draw coordinate system
+    ctx.strokeStyle = '#ccc';
+    ctx.beginPath();
+    ctx.moveTo(40, 20);
+    ctx.lineTo(40, height - 40);
+    ctx.lineTo(width - 20, height - 40);
+    ctx.stroke();
+    
+    // Calculate minimum and maximum for x-axis (sample size)
+    const minSampleSize = 5;
+    const maxSampleSize = Math.max(sampleSize * 2, 100);
+    
+    // Power curve data points
+    const points = [];
+    for (let n = minSampleSize; n <= maxSampleSize; n += Math.max(1, Math.floor(maxSampleSize / 50))) {
+      const effectSize = Math.abs(meanA - meanB) / Math.sqrt((Math.pow(sdA, 2) + Math.pow(sdB, 2)) / 2);
+      const ncp = effectSize * Math.sqrt(n / 2); // Non-centrality parameter
+      const criticalT = getZScore(1 - alpha / 2); // Critical t-value (approximated)
+      
+      // Calculate power using approximation
+      let calculatedPower;
+      if (ncp > 0) {
+        calculatedPower = 1 - normCDF(criticalT - ncp);
+      } else {
+        calculatedPower = normCDF(-criticalT - ncp);
+      }
+      
+      // Adjust for limitations of the approximation
+      calculatedPower = Math.min(Math.max(calculatedPower, 0.001), 0.999);
+      
+      points.push({
+        sampleSize: n,
+        power: calculatedPower
+      });
+    }
+    
+    // Draw power curve
+    ctx.strokeStyle = '#4285f4';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    points.forEach((point, i) => {
+      const x = 40 + (point.sampleSize - minSampleSize) / (maxSampleSize - minSampleSize) * (width - 60);
+      const y = (height - 40) - point.power * (height - 60);
+      
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    
+    ctx.stroke();
+    
+    // Draw desired power level
+    ctx.strokeStyle = '#db4437';
+    ctx.setLineDash([5, 3]);
+    ctx.beginPath();
+    const powerY = (height - 40) - power * (height - 60);
+    ctx.moveTo(40, powerY);
+    ctx.lineTo(width - 20, powerY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Mark the calculated sample size
+    ctx.fillStyle = '#4285f4';
+    const sampleSizeX = 40 + (sampleSize - minSampleSize) / (maxSampleSize - minSampleSize) * (width - 60);
+    const sampleSizeY = (height - 40) - power * (height - 60);
+    
+    ctx.beginPath();
+    ctx.arc(sampleSizeX, sampleSizeY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Add text and axis labels
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    
+    // Y-axis labels (power)
+    ctx.textAlign = 'right';
+    ctx.fillText('0%', 35, height - 40);
+    ctx.fillText('50%', 35, height - 40 - (height - 60) * 0.5);
+    ctx.fillText('100%', 35, 25);
+    ctx.fillText('Power', 35, 10);
+    
+    // X-axis labels (sample size)
+    ctx.textAlign = 'center';
+    ctx.fillText('Sample Size Per Group', width / 2, height - 10);
+    ctx.fillText(minSampleSize.toString(), 40, height - 25);
+    ctx.fillText(maxSampleSize.toString(), width - 20, height - 25);
+    ctx.fillText(sampleSize.toString(), sampleSizeX, height - 25);
+    
+    // Add legend
+    ctx.fillStyle = '#4285f4';
+    ctx.fillRect(width - 150, 20, 15, 15);
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'left';
+    ctx.fillText('Power Curve', width - 130, 32);
+    
+    ctx.strokeStyle = '#db4437';
+    ctx.setLineDash([5, 3]);
+    ctx.beginPath();
+    ctx.moveTo(width - 150, 50);
+    ctx.lineTo(width - 135, 50);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText(`Target Power (${(power * 100).toFixed(0)}%)`, width - 130, 52);
+  }
+  
+  // Normal cumulative distribution function
+  function normCDF(x) {
+    const t = 1 / (1 + 0.2316419 * Math.abs(x));
+    const d = 0.3989423 * Math.exp(-x * x / 2);
+    let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    if (x > 0) {
+      prob = 1 - prob;
+    }
+    return prob;
+  }
+  
+  // Initial calculation on load
+  calculateSampleSize();
+});
+</script>
