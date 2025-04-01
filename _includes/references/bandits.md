@@ -11,4 +11,7 @@
 
 [^lai1985]: Lai, T. L., & Robbins, H. (1985). Asymptotically efficient adaptive allocation rules. *Advances in Applied Mathematics*, 6(1), 4-22. 
 
-[^auer2002]: Auer, P., Cesa-Bianchi, N., & Fischer, P. (2002). Finite-time analysis of the multiarmed bandit problem. *Machine learning*, 47(2), 235-256.
+[^Auer]: Auer, P., Cesa-Bianchi, N., & Fischer, P. (2002). Finite-time analysis of the multiarmed bandit problem. *Machine learning*, 47(2), 235-256. <a href="https://homes.di.unimi.it/%7Ecesabian/Pubblicazioni/ml-02.pdf" target="_blank">https://doi.org/10.1023/A:1013689704352 </a>
+
+
+[^pilarski]: S. Pilarski, S. Pilarski and D. Varró, "Optimal Policy for Bernoulli Bandits: Computation and Algorithm Gauge," in IEEE Transactions on Artificial Intelligence, vol. 2, no. 1, pp. 2-17, Feb. 2021, <a href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9408359" target="_blank"> doi: 10.1109/TAI.2021.3074122 </a>

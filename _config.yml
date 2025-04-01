@@ -30,6 +30,10 @@ collections:
   posts:
     output: true
     permalink: /posts/:title/
+  simplified:
+    output: true
+    permalink: /simplified/:title/
+
 
 # Defaults
 defaults:
@@ -47,6 +51,11 @@ defaults:
       path: ""
     values:
       layout: "default"
+  - scope:
+      path: ""
+      type: "simplified"
+    values:
+      layout: "post"
 
 kramdown:
   input: GFM
