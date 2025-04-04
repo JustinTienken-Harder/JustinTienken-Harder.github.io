@@ -1,0 +1,615 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Spot Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .image-container {
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        canvas {
+            max-width: 100%;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        input[type="file"] {
+            margin-bottom: 15px;
+        }
+        
+        .value-display {
+            display: inline-block;
+            width: 40px;
+            text-align: right;
+        }
+        
+        #downloadBtn {
+            background-color: #2196F3;
+        }
+        
+        #downloadBtn:hover {
+            background-color: #0b7dda;
+        }
+        
+        #resetBtn {
+            background-color: #f44336;
+        }
+        
+        #resetBtn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <h1>White Spot Generator</h1>
+    <p>Apply a random multivariate Gaussian white spot to your images</p>
+    
+    <div class="container">
+        <div class="image-container">
+            <h2>Image Preview</h2>
+            <canvas id="imageCanvas"></canvas>
+            <div>
+                <input type="file" id="imageUpload" accept="image/*">
+                <button id="useDefaultBtn">Use Default Image</button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h2>Controls</h2>
+            
+            <div class="slider-container">
+                <label for="intensitySlider">Intensity: <span id="intensityValue" class="value-display">0.5</span></label>
+                <input type="range" id="intensitySlider" min="0" max="1" step="0.05" value="0.5">
+            </div>
+            
+            <div class="slider-container">
+                <input type="checkbox" id="useMask" checked>
+                <label for="useMask">Use Threshold Mask</label>
+            </div>
+            
+            <div class="slider-container">
+                <label for="poissonLambdaSlider">Poisson Lambda: <span id="poissonLambdaValue" class="value-display">1</span></label>
+                <input type="range" id="poissonLambdaSlider" min="0" max="10" step="0.1" value="1">
+            </div>
+            
+            <div class="slider-container">
+                <label for="noiseStrengthSlider">Noise Strength: <span id="noiseStrengthValue" class="value-display">0.5</span></label>
+                <input type="range" id="noiseStrengthSlider" min="0" max="1" step="0.05" value="0.5">
+            </div>
+            
+            <div class="slider-container">
+                <input type="checkbox" id="useNoiseSwitch">
+                <label for="useNoiseSwitch">Use Poisson Noise</label>
+            </div>
+            
+            <div class="buttons">
+                <button id="applyBtn">Apply White Spot</button>
+                <button id="resetBtn">Reset Image</button>
+                <button id="downloadBtn">Download Image</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Utility math functions
+        const math = {
+            // Generate random number between min and max
+            random: (min, max) => min + Math.random() * (max - min),
+            
+            // Create a 2D array filled with a value
+            create2DArray: (rows, cols, value = 0) => {
+                return Array(rows).fill().map(() => Array(cols).fill(value));
+            },
+            
+            // Deep copy of a 2D array
+            copy2DArray: (arr) => {
+                return arr.map(row => [...row]);
+            },
+            
+            // Matrix determinant for 2x2 matrix
+            det2x2: (matrix) => {
+                return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+            },
+            
+            // Matrix inverse for 2x2 matrix
+            inverse2x2: (matrix) => {
+                const det = math.det2x2(matrix);
+                if (Math.abs(det) < 1e-10) {
+                    // Fallback for near-singular matrices
+                    return [[1, 0], [0, 1]];
+                }
+                return [
+                    [matrix[1][1] / det, -matrix[0][1] / det],
+                    [-matrix[1][0] / det, matrix[0][0] / det]
+                ];
+            },
+            
+            // Add new function for Poisson random number generation
+            poissonRandom: (lambda) => {
+                const L = Math.exp(-lambda);
+                let k = 0;
+                let p = 1;
+                
+                do {
+                    k++;
+                    p *= Math.random();
+                } while (p > L);
+                
+                return k - 1;
+            },
+            
+            // Create a convolution function
+            convolve2D: (matrix, kernel) => {
+                const result = math.create2DArray(matrix.length, matrix[0].length);
+                const kHeight = kernel.length;
+                const kWidth = kernel[0].length;
+                const kCenterY = Math.floor(kHeight / 2);
+                const kCenterX = Math.floor(kWidth / 2);
+                
+                for (let i = 0; i < matrix.length; i++) {
+                    for (let j = 0; j < matrix[0].length; j++) {
+                        let sum = 0;
+                        for (let m = 0; m < kHeight; m++) {
+                            for (let n = 0; n < kWidth; n++) {
+                                const ii = i + (m - kCenterY);
+                                const jj = j + (n - kCenterX);
+                                
+                                if (ii >= 0 && ii < matrix.length && jj >= 0 && jj < matrix[0].length) {
+                                    sum += matrix[ii][jj] * kernel[m][n];
+                                }
+                            }
+                        }
+                        result[i][j] = sum;
+                    }
+                }
+                
+                return result;
+            }
+        };
+
+        // White spot generation functions
+        const whiteSpot = {
+            // Generate random covariance matrix
+            randomCovariance: (upperSd = 1, lowerSd = 0.1) => {
+                const a = lowerSd + Math.random() * (upperSd - lowerSd);
+                const b = lowerSd + Math.random() * (upperSd - lowerSd);
+                const theta = -Math.PI/2 + Math.random() * Math.PI;
+                const c = Math.cos(theta);
+                const s = Math.sin(theta);
+                const diag = b*c*s - a*s*c;
+                
+                return [
+                    [a*c*c + b*s*s, diag],
+                    [diag, a*s*s + b*c*c]
+                ];
+            },
+            
+            // Generate multivariate Gaussian distribution
+            multivariateGaussian: (x, y, mu, sigma) => {
+                const n = 2; // 2D Gaussian
+                const sigmaDet = math.det2x2(sigma);
+                const sigmaInv = math.inverse2x2(sigma);
+                const N = Math.sqrt(Math.pow(2*Math.PI, n) * sigmaDet);
+                
+                // Calculate (x-mu)^T Sigma^-1 (x-mu)
+                const dx = x - mu[0];
+                const dy = y - mu[1];
+                const fac = 
+                    dx * (sigmaInv[0][0] * dx + sigmaInv[0][1] * dy) +
+                    dy * (sigmaInv[1][0] * dx + sigmaInv[1][1] * dy);
+                
+                return Math.exp(-fac / 2) / N;
+            },
+            
+            // Generate a Gaussian grid for an arbitrary image shape
+            randomMvgGridArbitraryShape: (width, height) => {
+                const aspectRatio = width / height;
+                
+                // Scale coordinate system based on aspect ratio
+                const xRange = 4;
+                const yRange = xRange / aspectRatio;
+                
+                // Generate random mean
+                const mu = [
+                    (Math.random() - 0.5) * xRange,
+                    (Math.random() - 0.5) * yRange
+                ];
+                
+                // Generate appropriate covariance
+                const minRange = Math.min(xRange, yRange);
+                const sigma = whiteSpot.randomCovariance(
+                    minRange/4,
+                    minRange/20
+                );
+                
+                // Calculate threshold for masking
+                const point = [sigma[0][0] + mu[0], sigma[1][0] + mu[1]];
+                const threshold = whiteSpot.multivariateGaussian(
+                    point[0], point[1], mu, sigma
+                );
+                
+                // Create gaussian grid
+                const grid = [];
+                let maxVal = 0;
+                
+                for (let j = 0; j < height; j++) {
+                    const row = [];
+                    const y = (j / height - 0.5) * yRange;
+                    
+                    for (let i = 0; i < width; i++) {
+                        const x = (i / width - 0.5) * xRange;
+                        const val = whiteSpot.multivariateGaussian(x, y, mu, sigma);
+                        row.push(val);
+                        maxVal = Math.max(maxVal, val);
+                    }
+                    
+                    grid.push(row);
+                }
+                
+                return { grid, threshold, maxVal };
+            },
+            
+            // Apply white spot to image data
+            applyWhiteSpotToImage: (imageData, intensity, useMask) => {
+                const width = imageData.width;
+                const height = imageData.height;
+                const data = imageData.data;
+                
+                // Generate the gaussian grid
+                const { grid, threshold, maxVal } = whiteSpot.randomMvgGridArbitraryShape(width, height);
+                
+                // Apply the spot to the image
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        let spotIntensity;
+                        
+                        if (useMask) {
+                            // Apply threshold mask
+                            spotIntensity = Math.min(grid[y][x], threshold) / threshold * intensity;
+                        } else {
+                            // Scale by maximum value
+                            spotIntensity = grid[y][x] / maxVal * intensity;
+                        }
+                        
+                        // Calculate pixel index (4 channels: R,G,B,A)
+                        const idx = (y * width + x) * 4;
+                        
+                        // Add spot to each color channel
+                        data[idx] = Math.min(255, data[idx] + spotIntensity * 255);
+                        data[idx+1] = Math.min(255, data[idx+1] + spotIntensity * 255);
+                        data[idx+2] = Math.min(255, data[idx+2] + spotIntensity * 255);
+                        // Alpha channel remains unchanged
+                    }
+                }
+                
+                return imageData;
+            },
+            
+            // Generate Poisson noise
+            generatePoissonNoise: (width, height, lambda) => {
+                const noise = [];
+                let sum = 0;
+                
+                // Generate the noise
+                for (let y = 0; y < height; y++) {
+                    const row = [];
+                    for (let x = 0; x < width; x++) {
+                        const value = math.poissonRandom(lambda);
+                        row.push(value);
+                        sum += value;
+                    }
+                    noise.push(row);
+                }
+                
+                // Calculate mean
+                const mean = sum / (width * height);
+                
+                // Subtract mean
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        noise[y][x] -= mean;
+                    }
+                }
+                
+                return noise;
+            },
+            
+            // Create a small Gaussian kernel for convolution
+            createGaussianKernel: (size = 3, sigma = 1) => {
+                const kernel = [];
+                const center = Math.floor(size / 2);
+                let sum = 0;
+                
+                for (let y = 0; y < size; y++) {
+                    const row = [];
+                    for (let x = 0; x < size; x++) {
+                        const dx = x - center;
+                        const dy = y - center;
+                        const g = Math.exp(-(dx*dx + dy*dy) / (2*sigma*sigma));
+                        row.push(g);
+                        sum += g;
+                    }
+                    kernel.push(row);
+                }
+                
+                // Normalize the kernel
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        kernel[y][x] /= sum;
+                    }
+                }
+                
+                return kernel;
+            },
+            
+            // Apply white spot with Poisson noise
+            applyWhiteSpotWithPoisson: (imageData, intensity, useMask, poissonLambda, noiseStrength) => {
+                const width = imageData.width;
+                const height = imageData.height;
+                const data = imageData.data;
+                
+                // Generate the gaussian grid
+                const { grid, threshold, maxVal } = whiteSpot.randomMvgGridArbitraryShape(width, height);
+                
+                // Generate Poisson noise
+                const poissonNoise = whiteSpot.generatePoissonNoise(width, height, poissonLambda);
+                
+                // Create gaussian kernel for convolution
+                const gaussianKernel = whiteSpot.createGaussianKernel(5, 1.5);
+                
+                // Convolve the Poisson noise with the Gaussian kernel
+                const smoothedNoise = math.convolve2D(poissonNoise, gaussianKernel);
+                
+                // Find min/max of smoothed noise for normalization
+                let minNoise = Number.MAX_VALUE;
+                let maxNoise = Number.MIN_VALUE;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        minNoise = Math.min(minNoise, smoothedNoise[y][x]);
+                        maxNoise = Math.max(maxNoise, smoothedNoise[y][x]);
+                    }
+                }
+                const noiseRange = maxNoise - minNoise;
+                
+                // Apply the spot and noise to the image
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        let spotIntensity;
+                        
+                        if (useMask) {
+                            // Apply threshold mask
+                            spotIntensity = Math.min(grid[y][x], threshold) / threshold * intensity;
+                        } else {
+                            // Scale by maximum value
+                            spotIntensity = grid[y][x] / maxVal * intensity;
+                        }
+                        
+                        // Normalize noise to [-0.5, 0.5] range and scale by strength
+                        const normalizedNoise = ((smoothedNoise[y][x] - minNoise) / noiseRange - 0.5) * noiseStrength;
+                        
+                        // Add noise to the spot intensity
+                        spotIntensity = Math.max(0, Math.min(1, spotIntensity + normalizedNoise * spotIntensity));
+                        
+                        // Calculate pixel index (4 channels: R,G,B,A)
+                        const idx = (y * width + x) * 4;
+                        
+                        // Add spot to each color channel
+                        data[idx] = Math.min(255, data[idx] + spotIntensity * 255);
+                        data[idx+1] = Math.min(255, data[idx+1] + spotIntensity * 255);
+                        data[idx+2] = Math.min(255, data[idx+2] + spotIntensity * 255);
+                        // Alpha channel remains unchanged
+                    }
+                }
+                
+                return imageData;
+            }
+        };
+
+        // DOM elements
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        const imageUpload = document.getElementById('imageUpload');
+        const useDefaultBtn = document.getElementById('useDefaultBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const applyBtn = document.getElementById('applyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const intensitySlider = document.getElementById('intensitySlider');
+        const intensityValue = document.getElementById('intensityValue');
+        const useMaskCheckbox = document.getElementById('useMask');
+        const poissonLambdaSlider = document.getElementById('poissonLambdaSlider');
+        const poissonLambdaValue = document.getElementById('poissonLambdaValue');
+        const noiseStrengthSlider = document.getElementById('noiseStrengthSlider');
+        const noiseStrengthValue = document.getElementById('noiseStrengthValue');
+        const useNoiseSwitchCheckbox = document.getElementById('useNoiseSwitch');
+        
+        // State variables
+        let originalImage = null;
+
+        // Load default image
+        function loadDefaultImage() {
+            const defaultImg = new Image();
+            // No need for crossOrigin for local files
+            
+            // Use the path relative to where this HTML will be served from
+            // For Jekyll, assets in _includes are typically available at the site root
+            defaultImg.src = "{{ site.baseurl }}/images/image_aug/4.png";
+            
+            defaultImg.onload = function() {
+                originalImage = defaultImg;
+                resetImage();
+            };
+            
+            defaultImg.onerror = function() {
+                console.error("Failed to load default image from: " + defaultImg.src);
+                // Fallback to a solid color if image fails to load
+                canvas.width = 640;
+                canvas.height = 480;
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Default image failed to load', canvas.width/2, canvas.height/2);
+                ctx.fillText('Check path: ' + defaultImg.src, canvas.width/2, canvas.height/2 + 30);
+                
+                // Create a blank "original image"
+                createBlankOriginalImage(640, 480);
+            };
+        }
+        
+        // Create a blank original image
+        function createBlankOriginalImage(width, height) {
+            canvas.width = width;
+            canvas.height = height;
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Create an image from the canvas
+            originalImage = new Image();
+            originalImage.src = canvas.toDataURL();
+        }
+        
+        // Reset to original image
+        function resetImage() {
+            if (!originalImage) return;
+            
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(originalImage, 0, 0);
+        }
+        
+        // Apply white spot effect
+        function applyWhiteSpot() {
+            if (!originalImage) return;
+            
+            // Always start with the original image
+            resetImage();
+            
+            const intensity = parseFloat(intensitySlider.value);
+            const useMask = useMaskCheckbox.checked;
+            const useNoise = useNoiseSwitchCheckbox.checked;
+            
+            // Get current canvas data
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // Apply white spot with or without noise
+            if (useNoise) {
+                const poissonLambda = parseFloat(poissonLambdaSlider.value);
+                const noiseStrength = parseFloat(noiseStrengthSlider.value);
+                const processedData = whiteSpot.applyWhiteSpotWithPoisson(
+                    imageData, intensity, useMask, poissonLambda, noiseStrength
+                );
+                ctx.putImageData(processedData, 0, 0);
+            } else {
+                // Use the original implementation without noise
+                const processedData = whiteSpot.applyWhiteSpotToImage(imageData, intensity, useMask);
+                ctx.putImageData(processedData, 0, 0);
+            }
+        }
+        
+        // Handle file upload
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImage = img;
+                    resetImage();
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Download the processed image
+        function downloadImage() {
+            const dataURL = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = 'white-spot-image.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        // Update intensity value display
+        function updateIntensityDisplay() {
+            intensityValue.textContent = intensitySlider.value;
+        }
+        
+        // Update value displays
+        function updatePoissonLambdaDisplay() {
+            poissonLambdaValue.textContent = poissonLambdaSlider.value;
+        }
+        
+        function updateNoiseStrengthDisplay() {
+            noiseStrengthValue.textContent = noiseStrengthSlider.value;
+        }
+        
+        // Event listeners
+        useDefaultBtn.addEventListener('click', loadDefaultImage);
+        resetBtn.addEventListener('click', resetImage);
+        imageUpload.addEventListener('change', handleImageUpload);
+        applyBtn.addEventListener('click', applyWhiteSpot);
+        downloadBtn.addEventListener('click', downloadImage);
+        intensitySlider.addEventListener('input', updateIntensityDisplay);
+        poissonLambdaSlider.addEventListener('input', updatePoissonLambdaDisplay);
+        noiseStrengthSlider.addEventListener('input', updateNoiseStrengthDisplay);
+        
+        // Initialize
+        loadDefaultImage();
+        updateIntensityDisplay();
+        updatePoissonLambdaDisplay();
+        updateNoiseStrengthDisplay();
+    </script>
+</body>
+</html>

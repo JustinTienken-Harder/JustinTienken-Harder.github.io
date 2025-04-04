@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="100" height="100"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Cube faces -->
+  <!-- Top face (white) -->
+  <path d="M50,15 L20,30 L50,45 L80,30 Z" fill="#ffffff" stroke="#000000" stroke-width="1.5"></path>
+  
+  <!-- Left face (green) -->
+  <path d="M20,30 L20,60 L50,75 L50,45 Z" fill="#009b48" stroke="#000000" stroke-width="1.5"></path>
+  
+  <!-- Right face (red) -->
+  <path d="M50,45 L50,75 L80,60 L80,30 Z" fill="#b71234" stroke="#000000" stroke-width="1.5"></path>
+  
+  <!-- UNCHANGED: Grid lines for left face (green) - these are perfect -->
+  <line x1="20" y1="40" x2="50" y2="55" stroke="#000000" stroke-width="0.8"></line>
+  <line x1="20" y1="50" x2="50" y2="65" stroke="#000000" stroke-width="0.8"></line>
+  <line x1="30" y1="35" x2="30" y2="65" stroke="#000000" stroke-width="0.8"></line>
+  <line x1="40" y1="40" x2="40" y2="70" stroke="#000000" stroke-width="0.8"></line>
+  
+  <!-- UNCHANGED: Grid lines for right face (red) - these are perfect now -->
+  <line x1="50" y1="55" x2="80" y2="40" stroke="#000000" stroke-width="0.8"></line>
+  <line x1="50" y1="65" x2="80" y2="50" stroke="#000000" stroke-width="0.8"></line>
+  <line x1="60" y1="40" x2="60" y2="70" stroke="#000000" stroke-width="0.8"></line>
+  <line x1="70" y1="35" x2="70" y2="65" stroke="#000000" stroke-width="0.8"></line>
+  
+  <!-- FIXED: Grid lines for top face (white) -->
+  <!-- Horizontal lines from top-left to right (the good ones you mentioned) -->
+  <line x1="30" y1="25" x2="60" y2="40" stroke="#000000" stroke-width="0.8"></line>
+  <line x1="40" y1="20" x2="70" y2="35" stroke="#000000" stroke-width="0.8"></line>
+  
+  <!-- NEW: Lines from top-right to green side -->
+  <line x1="70" y1="25" x2="40" y2="40" stroke="#000000" stroke-width="0.8"></line>
+  <line x1="60" y1="20" x2="30" y2="35" stroke="#000000" stroke-width="0.8"></line>
+</svg><style>@media (prefers-color-scheme: light) { :root { filter: none; } }
+@media (prefers-color-scheme: dark) { :root { filter: none; } }
+</style></svg>
