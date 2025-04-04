@@ -1,0 +1,467 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Limit Optimizer Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #333; text-align: center; margin-top: 0; font-size: 24px;">Rate Limit Optimizer Visualization</h2>
+        
+        <!-- Stats -->
+        <div style="display: flex; justify-content: space-between; margin: 15px 0; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+            <div style="padding: 12px; border-radius: 4px; background-color: #f5f5f5; text-align: center; width: 31%; border: 1px solid #ddd;">
+                <div style="font-size: 12px; color: #666;">Upper Bound (Safe)</div>
+                <div id="upperBoundValue" style="font-size: 20px; font-weight: bold; margin: 8px 0; color: #4CAF50;">120s</div>
+            </div>
+            <div style="padding: 12px; border-radius: 4px; background-color: #f5f5f5; text-align: center; width: 31%; border: 1px solid #ddd;">
+                <div style="font-size: 12px; color: #666;">Current Test</div>
+                <div id="currentValue" style="font-size: 20px; font-weight: bold; margin: 8px 0; color: #2196F3;">60s</div>
+            </div>
+            <div style="padding: 12px; border-radius: 4px; background-color: #f5f5f5; text-align: center; width: 31%; border: 1px solid #ddd;">
+                <div style="font-size: 12px; color: #666;">Lower Bound (Limited)</div>
+                <div id="lowerBoundValue" style="font-size: 20px; font-weight: bold; margin: 8px 0; color: #f44336;">-</div>
+            </div>
+        </div>
+        
+        <!-- Legend and Controls -->
+        <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+            <div style="display: flex; justify-content: center; margin: 15px 0; gap: 20px;">
+                <div style="display: flex; align-items: center; font-size: 12px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; background-color: #4CAF50;"></div>
+                    <span>Success (No Rate Limit)</span>
+                </div>
+                <div style="display: flex; align-items: center; font-size: 12px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; background-color: #f44336;"></div>
+                    <span>Failure (Rate Limited)</span>
+                </div>
+                <div style="display: flex; align-items: center; font-size: 12px;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; background-color: #2196F3; border: 2px solid #0b7dda;"></div>
+                    <span>Current Test</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: center; margin: 15px 0; gap: 10px;">
+                <button id="rloStep" style="background-color: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Next Step</button>
+                <button id="rloAuto" style="background-color: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Auto Run</button>
+                <button id="rloReset" style="background-color: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Reset</button>
+            </div>
+        </div>
+        
+        <!-- Test Results -->
+        <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+            <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #333;">Test Results:</div>
+            <div id="rloTestsContainer">
+                <!-- Time scale indicators -->
+                <div style="display: flex; justify-content: space-between; margin-top: 2px; padding: 0 15px; font-size: 10px; color: #999;">
+                    <span>0s</span>
+                    <span>30s</span>
+                    <span>60s</span>
+                    <span>90s</span>
+                    <span>120s</span>
+                </div>
+                
+                <!-- Bounds indicator -->
+                <div id="rloBoundsIndicator" style="height: 6px; position: relative; background-color: #f5f5f5; margin: 0 15px; border-radius: 3px; margin-top: 5px; margin-bottom: 10px;">
+                    <!-- Will be filled by JavaScript -->
+                </div>
+                
+                <!-- Initial test row -->
+                <div style="display: flex; align-items: center; margin-bottom: 8px; padding: 8px 12px; border-radius: 4px; border: 1px solid #eee;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; background-color: #2196F3; border: 2px solid #0b7dda;"></div>
+                    <div style="width: 60px; font-weight: bold; font-size: 14px;">60s</div>
+                    <div style="flex-grow: 1; height: 10px; background-color: #eee; position: relative; border-radius: 5px; margin: 0 15px;">
+                        <div style="position: absolute; width: 16px; height: 16px; border-radius: 50%; top: -3px; transform: translateX(-50%); left: 50%; background-color: #2196F3; border: 2px solid #0b7dda;"></div>
+                    </div>
+                    <div style="width: 200px; text-align: right; font-size: 13px;">Testing...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log -->
+        <div id="rloLog" style="border: 1px solid #ddd; border-radius: 4px; height: 150px; overflow-y: auto; padding: 10px; background-color: #f9f9f9; font-size: 13px;">
+            <div style="margin: 3px 0; padding: 3px; border-bottom: 1px solid #eee;">Starting optimization with upper bound of 120 seconds...</div>
+            <div style="margin: 3px 0; padding: 3px; border-bottom: 1px solid #eee; color: #2196F3; font-weight: bold;">Testing rate: 60 seconds between requests</div>
+        </div>
+
+        <script>
+            (function() {
+                // Use a unique namespace for this script to avoid conflicts
+                const RLO = {};
+                
+                // Initial values
+                RLO.upperBound = 120; // 2 minutes
+                RLO.lowerBound = null;
+                RLO.current = 60; // start halfway
+                RLO.tests = []; // will store all test results
+                RLO.isRunning = false;
+                RLO.runInterval = null;
+                
+                // Random rate limit between 5 and 40 seconds (different each time)
+                RLO.actualRateLimit = Math.random() * 35 + 5; // Between 5-40 seconds
+                RLO.actualRateLimit = parseFloat(RLO.actualRateLimit.toFixed(1)); // Round to 1 decimal place
+                console.log("Current rate limit (hidden from user):", RLO.actualRateLimit);
+                
+                // DOM Elements
+                RLO.boundsIndicator = document.getElementById('rloBoundsIndicator');
+                RLO.testsContainer = document.getElementById('rloTestsContainer');
+                RLO.upperBoundValue = document.getElementById('upperBoundValue');
+                RLO.lowerBoundValue = document.getElementById('lowerBoundValue');
+                RLO.currentValue = document.getElementById('currentValue');
+                RLO.logContainer = document.getElementById('rloLog');
+                RLO.stepButton = document.getElementById('rloStep');
+                RLO.autoButton = document.getElementById('rloAuto');
+                RLO.resetButton = document.getElementById('rloReset');
+                
+                // Update the updateBounds function for 2 decimal places
+                RLO.updateBounds = function() {
+                    // Update the bounds indicator
+                    RLO.boundsIndicator.innerHTML = '';
+                    
+                    if (RLO.lowerBound !== null && RLO.upperBound !== null) {
+                        const lowerPos = (RLO.lowerBound / 120) * 100;
+                        const upperPos = (RLO.upperBound / 120) * 100;
+                        
+                        const boundArea = document.createElement('div');
+                        boundArea.style.position = 'absolute';
+                        boundArea.style.height = '100%';
+                        boundArea.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
+                        boundArea.style.borderRadius = '3px';
+                        boundArea.style.left = `${lowerPos}%`;
+                        boundArea.style.width = `${upperPos - lowerPos}%`;
+                        RLO.boundsIndicator.appendChild(boundArea);
+                    } else if (RLO.upperBound !== null) {
+                        const upperPos = (RLO.upperBound / 120) * 100;
+                        
+                        const boundArea = document.createElement('div');
+                        boundArea.style.position = 'absolute';
+                        boundArea.style.height = '100%';
+                        boundArea.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
+                        boundArea.style.borderRadius = '3px';
+                        boundArea.style.left = '0%';
+                        boundArea.style.width = `${upperPos}%`;
+                        RLO.boundsIndicator.appendChild(boundArea);
+                    }
+                    
+                    // Update stats display with 2 decimal places
+                    RLO.upperBoundValue.textContent = RLO.upperBound !== null ? `${RLO.upperBound.toFixed(2)}s` : '-';
+                    RLO.lowerBoundValue.textContent = RLO.lowerBound !== null ? `${RLO.lowerBound.toFixed(2)}s` : '-';
+                    RLO.currentValue.textContent = `${RLO.current.toFixed(2)}s`;
+                };
+
+                // Updated simulateTest function with higher precision (0.01 instead of 0.1)
+                RLO.simulateTest = function() {
+                    // Get the initial test row that's already in the HTML
+                    const currentTest = RLO.testsContainer.querySelector('div[style*="border: 1px solid #eee"]');
+                    
+                    if (!currentTest) {
+                        console.error("Test row element not found!");
+                        return false;
+                    }
+                    
+                    console.log("Testing value:", RLO.current, "Current bounds:", RLO.lowerBound, RLO.upperBound);
+                    
+                    // Decide whether the test will succeed based on the actual rate limit
+                    const success = RLO.current > RLO.actualRateLimit;
+                    
+                    // Store test result
+                    RLO.tests.push({
+                        time: RLO.current,
+                        success: success
+                    });
+                    
+                    // Log the test result
+                    RLO.addLog(`Test at ${RLO.current.toFixed(2)}s: ${success ? 'SUCCESS - No rate limiting' : 'FAILURE - Got rate limited'}`, 
+                        success ? 'log-success' : 'log-failure');
+                    
+                    // Update the test row to show the result of the current test
+                    const marker = currentTest.querySelector('div[style*="border-radius: 50%"]');
+                    if (marker) {
+                        marker.style.backgroundColor = success ? '#4CAF50' : '#f44336';
+                        marker.style.border = 'none';
+                    }
+                    
+                    // Find the timeline
+                    const positionElement = currentTest.children[2];
+                    if (positionElement) {
+                        // Find the dot
+                        const dot = positionElement.querySelector('div[style*="border-radius: 50%"]');
+                        if (dot) {
+                            dot.style.backgroundColor = success ? '#4CAF50' : '#f44336';
+                            dot.style.border = 'none';
+                            dot.style.width = '14px';
+                            dot.style.height = '14px';
+                            dot.style.top = '-2px';
+                        }
+                    }
+                    
+                    // Update result text
+                    const resultElement = currentTest.lastElementChild;
+                    if (resultElement) {
+                        resultElement.textContent = success ? 'SUCCESS - No rate limiting' : 'FAILURE - Got rate limited';
+                    }
+                    
+                    // Update bounds based on result
+                    if (success) {
+                        // If successful, this becomes our new upper bound
+                        RLO.upperBound = RLO.current;
+                        RLO.addLog(`New upper bound: ${RLO.upperBound.toFixed(2)}s`);
+                    } else {
+                        // If failed, this becomes our new lower bound
+                        RLO.lowerBound = RLO.current;
+                        RLO.addLog(`New lower bound: ${RLO.lowerBound.toFixed(2)}s`);
+                    }
+                    
+                    // Check if we've converged - UPDATED TO 0.01 PRECISION
+                    if (RLO.lowerBound !== null && RLO.upperBound !== null) {
+                        // Calculate difference with proper rounding to avoid floating point issues
+                        const difference = parseFloat((RLO.upperBound - RLO.lowerBound).toFixed(2));
+                        console.log("Current difference between bounds:", difference);
+                        
+                        // Check if difference is 0.01 or less (increased precision)
+                        if (difference <= 0.01) {
+                            RLO.addLog(`Optimization complete! Optimal rate: ${RLO.upperBound.toFixed(2)}s between requests`, 'log-success');
+                            RLO.addLog(`(The actual rate limit was ${RLO.actualRateLimit}s)`, 'log-success');
+                            RLO.stopAutoRun();
+                            RLO.stepButton.disabled = true;
+                            RLO.stepButton.style.backgroundColor = '#cccccc';
+                            RLO.stepButton.style.cursor = 'not-allowed';
+                            return true; // Indicate completion
+                        }
+                    }
+                    
+                    // Save the previous value
+                    const previousValue = RLO.current;
+                    
+                    // Calculate next test time (binary search with decimal precision)
+                    if (RLO.lowerBound === null) {
+                        // If we don't have a lower bound yet, halve the current time
+                        RLO.current = previousValue / 2;
+                    } else {
+                        // Otherwise, test the middle point between bounds
+                        RLO.current = (RLO.upperBound + RLO.lowerBound) / 2;
+                    }
+                    
+                    // Ensure we maintain 2 decimal places of precision (increased from 1)
+                    RLO.current = parseFloat(RLO.current.toFixed(2));
+                    
+                    // Make sure we don't test the same value twice due to rounding
+                    if (RLO.current === previousValue) {
+                        console.log("Same value detected, forcing completion");
+                        RLO.addLog(`Optimization complete! Optimal rate: ${RLO.upperBound.toFixed(2)}s between requests`, 'log-success');
+                        RLO.addLog(`(The actual rate limit was ${RLO.actualRateLimit.toFixed(2)}s)`, 'log-success');
+                        RLO.stopAutoRun();
+                        RLO.stepButton.disabled = true;
+                        RLO.stepButton.style.backgroundColor = '#cccccc';
+                        RLO.stepButton.style.cursor = 'not-allowed';
+                        return true;
+                    }
+                    
+                    console.log("New test value:", RLO.current);
+                    
+                    // Update UI bounds display
+                    RLO.updateBounds();
+                    
+                    // Update the existing test row for the NEXT test
+                    if (currentTest) {
+                        // Calculate the new position
+                        const position = (RLO.current / 120) * 100;
+                        
+                        // Update time display
+                        const timeElement = currentTest.querySelector('div:nth-child(2)');
+                        if (timeElement) {
+                            timeElement.textContent = `${RLO.current.toFixed(2)}s`;
+                        }
+                        
+                        // Update dot position and style for next test
+                        if (positionElement) {
+                            const dot = positionElement.querySelector('div');
+                            if (dot) {
+                                dot.style.left = `${position}%`;
+                                dot.style.backgroundColor = '#2196F3';
+                                dot.style.border = '2px solid #0b7dda';
+                                dot.style.width = '16px';
+                                dot.style.height = '16px';
+                                dot.style.top = '-3px';
+                            }
+                        }
+                        
+                        // Reset marker to blue for next test
+                        if (marker) {
+                            marker.style.backgroundColor = '#2196F3';
+                            marker.style.border = '2px solid #0b7dda';
+                        }
+                        
+                        // Reset result text for next test
+                        if (resultElement) {
+                            resultElement.textContent = 'Testing...';
+                        }
+                    }
+                    
+                    // Log next step
+                    RLO.addLog(`Next test will be at ${RLO.current.toFixed(2)}s`, 'log-current');
+                    
+                    // Update current value display in the stats
+                    RLO.currentValue.textContent = `${RLO.current.toFixed(2)}s`;
+                    
+                    return false; // Not complete yet
+                };
+
+                // Fixed addLog function that properly works with the log container
+                RLO.addLog = function(message, type = '') {
+                    // Create a new log entry
+                    const entry = document.createElement('div');
+                    entry.style.margin = '3px 0';
+                    entry.style.padding = '3px';
+                    entry.style.borderBottom = '1px solid #eee';
+                    
+                    // Apply appropriate styling based on message type
+                    if (type === 'log-success') {
+                        entry.style.color = '#4CAF50';
+                    } else if (type === 'log-failure') {
+                        entry.style.color = '#f44336';
+                    } else if (type === 'log-current') {
+                        entry.style.color = '#2196F3';
+                        entry.style.fontWeight = 'bold';
+                    }
+                    
+                    // Set the message text
+                    entry.textContent = message;
+                    
+                    // Add to the log container
+                    RLO.logContainer.appendChild(entry);
+                    
+                    // Scroll to the bottom
+                    RLO.logContainer.scrollTop = RLO.logContainer.scrollHeight;
+                };
+
+                // Update the reset function to use 2 decimal places
+                RLO.reset = function() {
+                    // Generate a new random rate limit between 5 and 40 seconds with 2 decimal precision
+                    RLO.actualRateLimit = Math.random() * 35 + 5; // Between 5-40 seconds
+                    RLO.actualRateLimit = parseFloat(RLO.actualRateLimit.toFixed(2)); // Round to 2 decimals
+                    console.log("New rate limit (hidden from user):", RLO.actualRateLimit);
+                    
+                    // Reset values
+                    RLO.upperBound = 120;
+                    RLO.lowerBound = null;
+                    RLO.current = 60;
+                    RLO.tests = [];
+                    
+                    // Clear UI
+                    RLO.stopAutoRun();
+                    
+                    // Reset the bounds indicator
+                    RLO.boundsIndicator.innerHTML = '';
+                    
+                    // Reset the test row to initial state
+                    const testRow = RLO.testsContainer.querySelector('div[style*="border: 1px solid #eee"]');
+                    if (testRow) {
+                        // Reset marker
+                        const marker = testRow.querySelector('div[style*="border-radius: 50%"]');
+                        if (marker) {
+                            marker.style.backgroundColor = '#2196F3';
+                            marker.style.border = '2px solid #0b7dda';
+                        }
+                        
+                        // Reset time display with 2 decimal places
+                        const timeElement = testRow.querySelector('div:nth-child(2)');
+                        if (timeElement) {
+                            timeElement.textContent = '60.00s';
+                        }
+                        
+                        // Reset position dot
+                        const positionElement = testRow.children[2];
+                        if (positionElement) {
+                            const dot = positionElement.querySelector('div');
+                            if (dot) {
+                                dot.style.left = '50%'; // 60s is at 50% of 120s
+                                dot.style.backgroundColor = '#2196F3';
+                                dot.style.border = '2px solid #0b7dda';
+                                dot.style.width = '16px';
+                                dot.style.height = '16px';
+                                dot.style.top = '-3px';
+                            }
+                        }
+                        
+                        // Reset result text
+                        const resultElement = testRow.lastElementChild;
+                        if (resultElement) {
+                            resultElement.textContent = 'Testing...';
+                        }
+                    }
+                    
+                    // Update UI
+                    RLO.updateBounds();
+                    
+                    // Reset log
+                    RLO.logContainer.innerHTML = '';
+                    RLO.addLog('Starting optimization with upper bound of 120 seconds...');
+                    RLO.addLog('Testing rate: 60.00s between requests', 'log-current');
+                    RLO.addLog('(A new random rate limit has been generated)');
+                    
+                    // Reset buttons
+                    RLO.stepButton.disabled = false;
+                    RLO.stepButton.style.backgroundColor = '#4CAF50';
+                    RLO.stepButton.style.cursor = 'pointer';
+                    
+                    // Update current value display with 2 decimal places
+                    RLO.currentValue.textContent = '60.00s';
+                };
+                
+                // Start auto running
+                RLO.startAutoRun = function() {
+                    if (RLO.isRunning) return;
+                    
+                    RLO.isRunning = true;
+                    RLO.autoButton.textContent = 'Pause';
+                    
+                    RLO.runInterval = setInterval(() => {
+                        const isComplete = RLO.simulateTest();
+                        if (isComplete) {
+                            RLO.stopAutoRun();
+                        }
+                    }, 1000); // Run a step every second for visualization
+                };
+                
+                // Stop auto running
+                RLO.stopAutoRun = function() {
+                    if (!RLO.isRunning) return;
+                    
+                    RLO.isRunning = false;
+                    RLO.autoButton.textContent = 'Auto Run';
+                    clearInterval(RLO.runInterval);
+                };
+                
+                // Event listeners
+                RLO.stepButton.addEventListener('click', () => {
+                    RLO.simulateTest();
+                });
+                
+                RLO.autoButton.addEventListener('click', () => {
+                    if (RLO.isRunning) {
+                        RLO.stopAutoRun();
+                    } else {
+                        RLO.startAutoRun();
+                    }
+                });
+                
+                RLO.resetButton.addEventListener('click', RLO.reset);
+                
+                // Initialize the visualization
+                RLO.updateBounds();
+                
+                // Exposing the namespace is optional if you want to access it from outside this script
+                window.RateLimitOptimizer = RLO;
+            })();
+        </script>
+    </div>
+</body>
+</html>

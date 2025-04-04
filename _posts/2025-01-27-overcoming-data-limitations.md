@@ -33,6 +33,10 @@ Don't try and access non-public data; that's illegal. If your concern is how unl
 
 Dynamic pages are the most pain to utilize, but it's feasible to utilize browser-based simulation packages to scrape data. For example, HackerOne is a very dynamic website, but fortunately the URLs of security vulnerabilities are essentially sequentially enumerated. Utilizing a package like playwright allows you to simulate user interaction (clicking on certain elements that you might need; such as, "show more" or "see comments"), and you can wait for the DOM elements to load before getting the entire rendered page.
 
+Sometimes you'll run into rate limits (return codes of, you're going too fast). It's best to think about them in advance, or just bake in a "rate limit" optimizer into your scraping algorithm. Here's a simple binary search optimizer, that finds your rate limit mad quick... well the vizualization for one.
+
+{% include scripts/image_aug/optimizer.html %}
+
 Learn to scrape everything and you might just be the next OpenAI.
 
 ## Augment
