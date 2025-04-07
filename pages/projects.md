@@ -6,7 +6,7 @@ permalink: /pages/projects/
 
 # Projects
 
-Here are some of the machine learning projects I've been working on:
+Here are some random projects that I've worked on in the past or recently.
 
 ## Project 1: Computer Vision for Object Detection
 

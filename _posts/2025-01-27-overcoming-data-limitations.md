@@ -97,4 +97,23 @@ A simple program that goes through your images+labels, flashes the label on the 
 
 ## Unsupervised techniques. 
 
-You don't need labelled data if you utilize unsupervised techniques. It's what got us such powerful language-models (non-chatbot versions as that utilizes some version of RLHF, or the arguably supervised alternative DPO). For noise-removal these techniques are almost unmatched -- in the realm of denoising auto-encoders
+You don't need labelled data if you utilize unsupervised techniques. It's what got us such powerful language-models (non-chatbot versions as that utilizes some version of RLHF, or the arguably supervised alternative DPO). For noise-removal these techniques are almost unmatched -- in the realm of denoising auto-encoders -- especially if you have a natural way of adding noise; training an effective model is almost free. 
+
+- Watermark removal
+- JPG Artifacts
+- Inpainting
+- [Complex damage](https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life) (although, not 100% unsupervised, but the technique is useful for other problems)
+
+## The Research
+
+Read papers. Read every paper tangentially related to the problem you are working on. It's frequently the case that techniques used to solve one irrelevant problem can be re-used to solve your problem. I've solved some anomaly detection problems on consumer goods inspired by research in unsupervised identification of metal objects in hyperspectral images. 
+
+The more you read, the more ideas, concepts, and approaches to problems you will be exposed to. Integrating this knowledge expands the breadth of challenges that you can tackle. 
+
+
+## Classical techniques
+
+Especially under-utilized for computer vision problems nowadays; when it comes to practical solutions, classical computer vision techniques (forming masks, edge detection, feature masks, feature matching, frame alignment, CLAHE, etc, etc) can take a project much further than the realm of "solvable" problems with machine learning models. 
+
+
+## Final thoughts
