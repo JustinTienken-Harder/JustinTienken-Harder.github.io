@@ -63,7 +63,8 @@ This is probably one of the strongest techniques to bootstrap your models from n
 
 But, if you're lacking enough labelled data to get a performant model (as in, you can overfit to training data, but have mediocre test performance). Weakly-Supervised learning can bootstrap your model to next levels. 
 
-The setup is simple. You first train the first model $M_1$ on your entire dataset (5-split cross validation can get you further)because you are minimizing (broadly) $|y_labeled - M_1(x)|$, we can utilize this model to produce labels. Thus, now utilize this model to label more of your unlabeled data $y_1 = M_1(x)$. Use these new labels to train a better model, $M_2$. Repeat again and again until deminishing returns $y_k = M_k(x)$. Filtering your newly-labelled data is super useful trick. There are many choices for filtering, and it's relatively extensively explored in the literature. But each problem has better performance between various filtering options, it's worth trying multiple if resources allow.
+The setup is simple. You first train the first model $M_1$ on your entire dataset (5-split cross validation can get you further)because you are minimizing (broadly) $\lvert y_{labeled} - M_1(x)
+\rvert $, we can utilize this model to produce labels. Thus, now utilize this model to label more of your unlabeled data $y_1 = M_1(x)$. Use these new labels to train a better model, $M_2$. Repeat again and again until deminishing returns $y_k = M_k(x)$. Filtering your newly-labelled data is super useful trick. There are many choices for filtering, and it's relatively extensively explored in the literature. But each problem has better performance between various filtering options, it's worth trying multiple if resources allow.
 
 - Only keep best confidence scored labels.
 
