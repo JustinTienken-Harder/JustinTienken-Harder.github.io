@@ -18,7 +18,7 @@ Here are some random projects that I've worked on in the past or recently.
 
 A simple project where I scraped all the japanese gardens, with descriptions and locations. Uses google's example API key to avoid ever getting overcharded on my GCP account. They got my credit card after all.
 
-I've actually been to quite a number of locations. This is probably the most robust map of Japanese Gardens in the United States. There are locations on here that are entirely on private property (such as the Japanese Ambassador to the United States' private garden), some inaccessible to the public such as Atlanta's Jimmy Carter Museum (which has an employee only japanese garden). Fortunately, the museum was closed, I hopped a couple fences, and accessed the Japanese garden which was... okay at best. One Japanese garden in south carolina was a triangle the size of 3'x 3' with a small plaque that said "Japanese Garden". 
+I've actually been to quite a number of locations. This is probably the most robust map of Japanese Gardens in the United States. There are locations on here that are entirely on private property (such as the Japanese Ambassador to the United States' private garden), some inaccessible to the public such as Atlanta's Jimmy Carter Museum (which has an employee only japanese garden). Fortunately, the museum was closed, I hopped a couple fences, and accessed the Japanese garden which was... okay at best. One Japanese garden in south carolina was a triangle the size of 3'x 3' with a small plaque that said "Japanese Garden".
 
 But there are also some extremely high-quality gardens that go under the radar. Seattle is home to the Seattle Japanese Garden, an extremely pretty garden in it's own right -- but costs $20 to enter. Right nearby, there is the Kobuta Garden, which is, in my opinion, the best Japanese garden in the United States. An extremely beautiful garden which epitomizes the "strolling" garden style. The designers did a wonderful job integrating multiple views of different scenes all throughout the garden. The wandering, many forking paths allow the viewer to get lost in the garden, and review previously visited scenes in an entirely new perspective. The placement of foilage is a master class in forced perspective (even changing perspective of sounds, as tiny streams become waterfalls with parabolic backdrops), miniaturizattion, and asymmetry. Highly recommend going here.
 
@@ -32,7 +32,7 @@ Each garden has it's own repository, I fork a base "webpage" design/layout that 
 
 Because of this "abuse" in repositories/namespace of webpages, I did it on a different account. However, you can see some of the Gardens I've visited below:
 
-- [Morikami](https://PhenomenalPanda.gitlab.io/Morikami/) and [Mirror](https://PhenomenalPanda.github.io/Morikami/)
+- [Morikami](https://PhenomenalPanda.gitlab.io/Morikami/) and [Mirror](https://PhenomenalPanda.github.io/morikami/)
 
 ## Papito's Photo Legacy
 
@@ -50,7 +50,9 @@ Recently, my cousin, Andre, and I are doing a Vue.JS redesign of the website to 
 
 ## Rubik's Reinforcement Learning
 
-Coded up a lightweight representation of a rubik's cube to try and build a CNN/DNN model to optimize a policy that can solve a rubik's cube. Experimented with A2C, A3C, DQN and other reinforment learning based algorithms (all hand coded). Explored, how cube representations impact policy performance (direct array numerical input, generate a 2*3 X 3*3 image grid of colors, etc), as well as how different algorithms perform. Got my taste of reward shaping, and the general troubles of Reinforcement Learning based approaches. 
+Coded up a lightweight representation of a rubik's cube to try and build a CNN/DNN model to optimize a policy that can solve a rubik's cube. Experimented with A2C, A3C, DQN and other reinforment learning based algorithms (all hand coded). Explored, how cube representations impact policy performance (direct array numerical input, generate a 2*3 X 3*3 image grid of colors, etc), as well as how different algorithms perform. Got my taste of reward shaping, and the general troubles of Reinforcement Learning based approaches.
+
+I had to build multiple programmatic interpretations of a Rubik's cube, so that I could simulate scrambles and solutions.
 
 A "failure" in the sense of a goal (cube-state to step-by-step instructions), but a wild success when it comes to learning how RL works, the theory, and how the algorithms work. What problems provide more trouble, as well as, how to improve RL systems. If I had to do the project again, I would do some reverse-RL by pre-training a policy on human data to get a good initial policy. This will substantially improve sample efficiency. Overall, it was a great learning experience.
 
