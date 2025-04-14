@@ -3,6 +3,7 @@ layout: post
 title: "Intro to Computer Vision"
 date: 2023-01-15
 categories: ["computer-vision"]
+abstract: "Lorum Ipsum filler post. Will update with the techniques and approaches I've utilized and experimented with in a more digestible fashion."
 ---
 
 ### What is Computer Vision?

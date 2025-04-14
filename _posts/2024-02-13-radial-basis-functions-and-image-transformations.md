@@ -3,10 +3,10 @@ layout: post
 title: "Radial Basis And Image Transformations"
 date: 2025-02-13
 categories: ["machine-learning", "basics", "computer-vision"]
+abstract: "Explore how Radial Basis Functions (a non-linear function approximation technique) can transform colors to help with computer vision for Rubik's cubes, creating a 24x data augmentation... resulting in actual new data for training."
 ---
 
 ## Problem Statement
-
 I was recently working on a problem involving computer vision on Rubik's cubes. One of the things that I was interested in was detecting the current state of a Rubik's cube during inspection. One of the features of a Rubik's cube is that it has the 24 rotational symmetries of Cube. These rotational symmetries are frequently exploited in solution software, as turning the right face of the cube clockwise is the same as rotating the cube and turning the left face clockwise (and then rotating back). They're also exploited during the fewest moves event, as rotating the cube before you scramble can give you a new perspective (and for the more advanced, inverse scrambles exploit more group symmetries).
 
 If you scramble a cube holding the WCA starting orientation (white or lightest color on top, and green on front), then any solution to the cube from this state is the same as if you scrambled the cube from a different orientation. The solution will work for both cubes. If you're unfamiliar with Rubik's cubes, spend some time rotating the cubes around to get a sense of how colors relative to each other remain fixed during rotations. You can see how different starting orientations preserve the "state" of the cube while changing the colors of the pieces (edges and corners). Verify this below after clicking the rewind buttons:

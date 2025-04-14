@@ -3,13 +3,13 @@ layout: post
 title: "Overcoming Insufficient Data"
 date: 2025-01-01
 categories: ["machine-learning"]
+abstract: "General approaches for dealing with a lack of data. How to choose models and bootstrap your data from N=0 to N=lots. Shows off the best visual glare implementation in TorchVision I made."
 ---
 
-# The Common Problem:
-
+## The Common Problem:
 You have some machine learning project, professional or hobbyist, and the data you have either isn't enough, or isn't sufficient to accomplish your goals. This is an all too frequent issue, as the quality of much data is aweful, insufficient, or otherwise unlabeled. Overcoming these challenges is far more common than most would like to admit. The focus in this post are particularly on language modeling and computer vision based issues.
 
-## The situations:
+### The situations:
 
 Here are some situations you can find yourself in, and your creativity is the limit for potential solutions. Hopefully, I can cover some novel techniques to get past the threshold to turn your project from intractable to achievable.
 
@@ -23,7 +23,7 @@ Here are some situations you can find yourself in, and your creativity is the li
 
 We'll take a look at solutions that can be broadly applied to most problems in the domain.
 
-## Scrape
+### Scrape
 
 If you don't have data, or don't have enough data. You should scrape. There are forums for all sorts of domain specific things, products, ideas, concepts, fandoms. Need tens of thousands of unlabeled pokemon cards? What about real and fake pokemon cards? There are entire communities dedicated to these things. Build your scrapers, and let them rip. When you're not working, your scraper is. Do you need a way to quantify the severity level of security vulnerabilities that your automated security software finds? Scrape the entirety of hacker-one security report, reverse-engineer their GraphQL api to make the direct calls that populate the publically accessible pages which include CVSS security scores. You might not have the data, but other people do. 
 
@@ -39,7 +39,7 @@ Sometimes you'll run into rate limits (return codes of, you're going too fast). 
 
 Learn to scrape everything and you might just be the next OpenAI.
 
-## Augment
+### Augment
 
 Augment. Think outside the standard TorchVision/Albumentations libraries, make 'em yourself if you have to. 
 
@@ -57,7 +57,7 @@ So I rolled my own data augmentation to perform unsupervised learning for glare 
 
 {% include scripts/image_aug/white_spot.html %}
 
-## Weakly-Supervised Learning
+### Weakly-Supervised Learning
 
 This is probably one of the strongest techniques to bootstrap your models from nothing to something. Ideally in a supervised setting, your entire dataset has clean labels. You proceed with splitting your data, training your models sufficiently, choosing a good model from your train/test curves, stress test it on your validation set, and move your model to deployment. 
 
@@ -78,13 +78,13 @@ This is the "quantity over quality" mindset. This frequently just works, as much
 
 Very peculiar, rareish scenario. Sometimes your model will under-perform so much on some classes, that actually dropping those classes in the self-labelled set can improve performance on those poor classes. This is frequently due to mislabeling as something else. You'll probably want to oversample instances with these hard examples.
 
-## Add irrelevant data
+### Add irrelevant data
 
 This may seem peculiar, but having a mixin-dataset for the same task can improve your model performance (especially if training from scratch). Need to detect new object classes? Keep the old classifier head, and make a new one for your current task. Mix in another well-established object detection data into your data loader, and you'll get increased performance on your task. It's sort of magical. 
 
 Furthermore, if you don't have any negative instances (as in, there is always an object to detect in your data), then adding images of backgrounds will improve detection performance. There's a degree that object detectors are super-greedy. It'll reduce false-positives. It's always worth on classification tasks to include negetave examples with a "nothing" class for largely the same reasons. 
 
-## Utilize Pre-Trained Models
+### Utilize Pre-Trained Models
 
 It's always worth the time and effort to transfer learn. Almost to the point to train your own architecture on a different much larger dataset, then transfer learn (or "fine-tune") on the dataset that you're actually interested in. The learned internal representation of images (as in the features in the convolutions) on a different dataset transfer to new data super well. The same is true for LLMs. 
 
@@ -96,7 +96,7 @@ The quality of the labels won't be the best; however, if you have enough unlabel
 
 A simple program that goes through your images+labels, flashes the label on the screen with a simple "left control is accept, right control is reject" you can get through thousands of images in an hour -- well on your way to bootstrapping to weakly supervision, and finally, greatness.
 
-## Unsupervised techniques. 
+### Unsupervised techniques. 
 
 You don't need labelled data if you utilize unsupervised techniques. It's what got us such powerful language-models (non-chatbot versions as that utilizes some version of RLHF, or the arguably supervised alternative DPO). For noise-removal these techniques are almost unmatched -- in the realm of denoising auto-encoders -- especially if you have a natural way of adding noise; training an effective model is almost free. 
 
@@ -105,16 +105,14 @@ You don't need labelled data if you utilize unsupervised techniques. It's what g
 - Inpainting
 - [Complex damage](https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life) (although, not 100% unsupervised, but the technique is useful for other problems)
 
-## The Research
+### The Research
 
 Read papers. Read every paper tangentially related to the problem you are working on. It's frequently the case that techniques used to solve one irrelevant problem can be re-used to solve your problem. I've solved some anomaly detection problems on consumer goods inspired by research in unsupervised identification of metal objects in hyperspectral images. 
 
 The more you read, the more ideas, concepts, and approaches to problems you will be exposed to. Integrating this knowledge expands the breadth of challenges that you can tackle. 
 
 
-## Classical techniques
+### Classical techniques
 
 Especially under-utilized for computer vision problems nowadays; when it comes to practical solutions, classical computer vision techniques (forming masks, edge detection, feature masks, feature matching, frame alignment, CLAHE, etc, etc) can take a project much further than the realm of "solvable" problems with machine learning models. 
 
-
-## Final thoughts

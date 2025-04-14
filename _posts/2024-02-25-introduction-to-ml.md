@@ -3,6 +3,7 @@ layout: post
 title: "Introduction to Machine Learning"
 date: 2024-02-25
 categories: ["machine-learning", "basics"]
+abstract: "Lorem Ipsum content. Future updates involve a brief look/touch on the many concepts, approaches, and depth of the Machine Learning Field."
 ---
 
 # Introduction to Machine Learning

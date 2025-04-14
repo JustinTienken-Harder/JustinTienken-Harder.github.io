@@ -3,11 +3,11 @@ layout: post
 title: "Sequential Statistics and Multi-Armed Bandits"
 date: 2025-01-01
 categories: ["machine-learning"]
+abstract: "History and motivations to the Multi-Armed Bandit problem. Includes lots of simulations and visualizations of how the UCB algorithm works. Touches on the many variations of the MAB problem. Play the slot machine simulation I made!"
 ---
 
 [Read simplified version](/simplified/Multi-Armed-Bandits/)
-# GAME!
-
+## GAME!
 Do you want to play the Multi-Armed bandit problem as an actual scenario? Place your bets on real slot machines, and explore how different algorithms perform with various distributions of payouts! Make your own machines, or generate random machines! It's pretty neat.
 
 <h2><a href="https://justintienken-harder.github.io/statistical-slot-machines/"> LINK! </a></h2>
@@ -15,7 +15,7 @@ Do you want to play the Multi-Armed bandit problem as an actual scenario? Place 
 Go to my simulation of the MAB problem today!. 
 
 
-# Motivations and History
+## Motivations and History
 
 The multi-armed bandit problem can be hueristically summarized as: You walk into a casino with $N$ machines each with different potential payouts; you only have enough time to play 100 times. How can you maximizes the total sum of your payouts?
 
@@ -38,7 +38,7 @@ If we return to the paper where the "original" mathematical formulation was prop
 > with two values, $n_1$ and $n_1+n_2$, and the value of $n$ is stochastically
 > dependent on the observations. 
 
-## A little (more) history:
+### A little (more) history:
 
 Furthermore, Johnson[^Johnson] provides more insight into the development of a statistician's role in the experimental process. He writes: 
 
@@ -78,7 +78,7 @@ In fact, here's a little calculator to do compute what sample size you need to a
 
 It's important to note, that you can't just run a statistical test at every stage of data collection, as multiple tests will introduce type 1 errors that compound the more you perform a statistical test (as you grow your sample size). This has largely been solved in the modern era, but it's historical implications still stand.
 
-## Enter Regret, and "policies"
+### Enter Regret, and "policies"
 
 Clearly, there is a certain amount of waste (or potential unrealized gain) by performing a simple A/B test without some experimental design in mind. As the statistician got closer to the experiment, the design and goals of minimizing wasted resources makes it's appearance. These goals are crucially important for public health from a medical perspective. Delays in treatments and tests were an exarcerbator for the AIDS epidemic in the United States. While the AIDS epidemic was (to an extent) political, clearly, more efficient statistical methodology would have improved outcomes for getting testing and treatments to patients. 
 
@@ -256,7 +256,7 @@ There's a setting where the machines aren't pulled, but actions on a machine tak
 
 In practice, there is usually a cast associated with the resource consumed by each action and the total cost is limited by a budget. This is the ["constrained contextual bandit"](https://papers.nips.cc/paper_files/paper/2015/hash/310dcbbf4cce62f762a2aaa148d556bd-Abstract.html)
 
-# Warnings
+## Warnings
 
 While UCB is "optimal" in a certain sense, there are certain situations that other statistical methods should really be considered.  If you have way more products than users could possibly interact with (think netflix), recommender systems will perform much better with historical data. 
 
@@ -272,7 +272,7 @@ However, it should be apparent that if you give layout B to women, and layout A 
 
 There is research in the conditional Multi-Armed Bandit problem -- and the more things you condition on, the more intractible the problem becomes (curse of dimensionality); however; I've written enough as is.
 
-#### Policy minimizing Regret is not the same as optimal stopping
+### Policy minimizing Regret is not the same as optimal stopping
 
 It should be noted that there is a difference between a policy/strategy that asymptotically minimizes regret and an approach that finds the best arm as quickly as possible. The first a statement of it's long-term regret minimization, the other is a statement at how well an algorithm explores options. This is important; as asymptotically, an A/B test can have constant regret (as we collect data, we can go until our confidence of the better option is very strong, then utilize the best option) -- but as we just established, there's better solutions out there.
 

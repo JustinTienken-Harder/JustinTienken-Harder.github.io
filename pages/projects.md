@@ -16,7 +16,7 @@ Here are some random projects that I've worked on in the past or recently.
 
 ## Japanese Gardens in the US & Canada
 
-A simple project where I scraped all the japanese gardens, with descriptions and locations. Uses google's example API key to avoid ever getting overcharded on my GCP account. They got my credit card after all.
+A simple project where I scraped all the japanese gardens, with descriptions and locations. Uses google's example API key to avoid ever getting overcharded on my GCP account. They got my credit card after all. [Check out the map!](https://phenomenalpanda.github.io/map.html)
 
 I've actually been to quite a number of locations. This is probably the most robust map of Japanese Gardens in the United States. There are locations on here that are entirely on private property (such as the Japanese Ambassador to the United States' private garden), some inaccessible to the public such as Atlanta's Jimmy Carter Museum (which has an employee only japanese garden). Fortunately, the museum was closed, I hopped a couple fences, and accessed the Japanese garden which was... okay at best. One Japanese garden in south carolina was a triangle the size of 3'x 3' with a small plaque that said "Japanese Garden".
 

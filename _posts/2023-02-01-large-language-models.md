@@ -3,7 +3,8 @@ layout: post
 title: "Large Language Models"
 date: 2023-02-01
 categories: ["language-models", "nlp"]
----
+abstract: "Lorem Ipsum generic content. Will eventually update with my techniques, approaches and applications of Language Models. You don't need API's for targeted tasks, you can get substantial improvements with a fine-tuned model (potentially off API generated content!)."
+--- 
 
 ## What are Large Language Models?
 LLMs are a type of artificial intelligence that uses neural networks to process and generate text. They are designed to predict the next word in a sentence, given the previous words, which allows them to generate coherent and contextually relevant text. Some of the most well-known LLMs include OpenAI's GPT-3, Google's BERT, and Facebook's RoBERTa.
